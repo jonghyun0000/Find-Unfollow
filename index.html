@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>언팔러 찾기</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(16, 24, 40, 0.82);
+      --panel-2: rgba(30, 41, 59, 0.88);
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #7c3aed;
+      --primary-2: #a855f7;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --blue: #38bdf8;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.22), transparent 24%),
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 22%),
+        linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1320px, calc(100% - 32px));
+      margin: 24px auto 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.7px;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .fake-btn {
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:hover,
+    .fake-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(168, 85, 247, 0.35);
+    }
+
+    .primary {
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .panel-desc {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .upload-box,
+    .filter-box {
+      border: 1px dashed rgba(168, 85, 247, 0.35);
+      background: rgba(124, 58, 237, 0.08);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .upload-box h3,
+    .filter-box h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .upload-box p,
+    .filter-box p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    input[type="file"],
+    textarea,
+    select {
+      width: 100%;
+      display: block;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 112px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .control-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mode-group,
+    .check-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mode-group {
+      grid-template-columns: 1fr;
+    }
+
+    .radio-card,
+    .check-card {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .radio-card input,
+    .check-card input {
+      margin-top: 2px;
+      accent-color: #a855f7;
+      flex-shrink: 0;
+    }
+
+    .radio-card strong,
+    .check-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .radio-card span,
+    .check-card span,
+    .tiny-desc {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .info-item strong { color: #fff; }
+
+    .result-area {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 18px;
+    }
+
+    .hero-main h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-main p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .hero-side .big {
+      font-size: 54px;
+      font-weight: 900;
+      line-height: 1;
+      margin: 8px 0 10px;
+      color: #fda4af;
+    }
+
+    .hero-side .sub {
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-item {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .stat-card .label {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .value {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+      margin-bottom: 8px;
+    }
+
+    .delta {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .up { color: #86efac; }
+    .down { color: #fca5a5; }
+    .warn { color: #fcd34d; }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .section-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: rgba(124, 58, 237, 0.18);
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #e9d5ff;
+    }
+
+    .user-list {
+      display: grid;
+      gap: 12px;
+      max-height: 560px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .user-row {
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: white;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      flex-shrink: 0;
+    }
+
+    .user-meta {
+      min-width: 0;
+    }
+
+    .user-meta strong {
+      display: block;
+      font-size: 15px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-meta span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.green {
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+    }
+
+    .badge.red {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+    }
+
+    .badge.yellow {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fcd34d;
+    }
+
+    .badge.blue {
+      background: rgba(56, 189, 248, 0.12);
+      color: #93c5fd;
+    }
+
+    .badge.purple {
+      background: rgba(168, 85, 247, 0.16);
+      color: #d8b4fe;
+    }
+
+    .chart-wrap {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      height: 280px;
+      padding-top: 10px;
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .bar {
+      width: 100%;
+      max-width: 42px;
+      background: linear-gradient(180deg, #c084fc 0%, #7c3aed 100%);
+      border-radius: 14px 14px 8px 8px;
+      box-shadow: 0 10px 20px rgba(124, 58, 237, 0.28);
+    }
+
+    .bar-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ddd6fe;
+    }
+
+    .bar-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      background: rgba(56, 189, 248, 0.08);
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .keyword-chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .highlight-box {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(168, 85, 247, 0.26);
+      background: rgba(168, 85, 247, 0.10);
+      border-radius: 14px;
+      color: #f5f3ff;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2, 6, 23, 0.76);
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(760px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.98));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .modal-top h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .modal-top p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .step-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      flex-shrink: 0;
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .modal-footer {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1150px) {
+      .layout,
+      .hero,
+      .bottom,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(100% - 20px, 1320px);
+        margin-top: 12px;
+      }
+
+      .title h1 { font-size: 28px; }
+      .stat-card .value { font-size: 28px; }
+      .hero-side .big { font-size: 44px; }
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+      .modal-card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title">
+        <h1>언팔러 찾기</h1>
+        <p>
+          인스타그램 데이터 내보내기 파일 2개를 업로드해서<br />
+          맞팔 / 팬 / 맞팔 아님 / 언팔 스냅샷 비교를 분석합니다.
+        </p>
+      </div>
+      <div class="btns">
+        <button id="guideBtn" class="primary">파일 다운로드 방법</button>
+        <button id="loadSampleBtn">샘플 데이터 채우기</button>
+        <button id="resetSnapshotBtn">저장된 팔로워 스냅샷 삭제</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <h2 class="panel-title">파일 업로드</h2>
+        <p class="panel-desc">
+          인스타그램 데이터 내보내기에서 받은 JSON 파일 2개를 넣어주세요.
+        </p>
+
+        <div class="upload-box">
+          <h3>1) followers_1.json</h3>
+          <p>팔로워 목록 파일입니다. 배열 형태로 들어있는 파일.</p>
+          <input type="file" id="followersFile" accept=".json,application/json" />
+        </div>
+
+        <div class="upload-box">
+          <h3>2) following.json</h3>
+          <p><code>relationships_following</code> 안에 팔로잉 목록이 들어있는 파일.</p>
+          <input type="file" id="followingFile" accept=".json,application/json" />
+        </div>
+
+        <div class="filter-box">
+          <h3>인플루언서 / 기관 계정 필터</h3>
+          <p>
+            학교, 지자체 홍보계정, 연예인, 인플루언서처럼 분석에서 빼고 싶은 계정을
+            <strong>제외</strong>하거나 반대로 해당 계정만 <strong>포함</strong>해서 볼 수 있습니다.
+          </p>
+
+          <div class="control-grid">
+            <div>
+              <div class="tiny-desc" style="margin-bottom:8px;">필터 모드</div>
+              <div class="mode-group">
+                <label class="radio-card">
+                  <input type="radio" name="filterMode" value="all" checked />
+                  <div>
+                    <strong>전체 보기</strong>
+                    <span>필터 없이 전체 분석 결과를 표시합니다.</span>
+                  </div>
+                </label>
+
+                <label class="radio-card">
+                  <input type="radio" name="filterMode" value="exclude" />
+                  <div>
+                    <strong>선택한 유형 제외</strong>
+                    <span>학교/지자체/연예인/인플루언서 계정을 분석 결과에서 뺍니다.</span>
+                  </div>
+                </label>
+
+                <label class="radio-card">
+                  <input type="radio" name="filterMode" value="only" />
+                  <div>
+                    <strong>선택한 유형만 포함</strong>
+                    <span>선택한 유형으로 판단된 계정만 따로 추려서 봅니다.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div class="tiny-desc" style="margin-bottom:8px;">유형 선택</div>
+              <div class="check-grid">
+                <label class="check-card">
+                  <input type="checkbox" class="categoryCheck" value="school" checked />
+                  <div>
+                    <strong>학교</strong>
+                    <span>school, univ, campus, 초/중/고/대학교 등</span>
+                  </div>
+                </label>
+                <label class="check-card">
+                  <input type="checkbox" class="categoryCheck" value="public" checked />
+                  <div>
+                    <strong>지자체 / 공공기관</strong>
+                    <span>city, gu, gov, official, 구청, 시청, 군청 등</span>
+                  </div>
+                </label>
+                <label class="check-card">
+                  <input type="checkbox" class="categoryCheck" value="promo" checked />
+                  <div>
+                    <strong>홍보 / 브랜드 / 공식계정</strong>
+                    <span>official, promo, marketing, brand, event 등</span>
+                  </div>
+                </label>
+                <label class="check-card">
+                  <input type="checkbox" class="categoryCheck" value="celeb" checked />
+                  <div>
+                    <strong>연예인 / 셀럽</strong>
+                    <span>actor, singer, idol, celeb, artist 등</span>
+                  </div>
+                </label>
+                <label class="check-card">
+                  <input type="checkbox" class="categoryCheck" value="influencer" checked />
+                  <div>
+                    <strong>인플루언서 / 크리에이터</strong>
+                    <span>creator, influencer, model, youtuber, blogger 등</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label for="customKeywords" class="tiny-desc" style="display:block; margin-bottom:8px;">
+                추가 키워드 (쉼표 또는 줄바꿈으로 구분)
+              </label>
+              <textarea id="customKeywords" placeholder="예: academy, localgov, celebrity, official_store, 홍보대사"></textarea>
+              <div class="tiny-desc" style="margin-top:8px;">
+                사용자명에 아래 키워드가 들어가면 인플루언서/기관 계정 후보로 함께 분류합니다.
+              </div>
+            </div>
+          </div>
+
+          <div class="keyword-chip-wrap" id="keywordPreview"></div>
+          <div class="highlight-box" id="filterSummary">
+            현재는 전체 보기 모드입니다.
+          </div>
+        </div>
+
+        <div class="btns" style="margin-top:14px;">
+          <button class="primary" id="analyzeBtn">분석 시작</button>
+          <button id="saveSnapshotBtn">현재 팔로워 스냅샷 저장</button>
+        </div>
+
+        <div class="info-list">
+          <div class="info-item"><strong>현재 followers 파일:</strong> <span id="followersFileName">없음</span></div>
+          <div class="info-item"><strong>현재 following 파일:</strong> <span id="followingFileName">없음</span></div>
+          <div class="info-item"><strong>저장된 이전 팔로워 스냅샷:</strong> <span id="snapshotStatus">없음</span></div>
+          <div class="info-item"><strong>필터로 잡힌 계정 수:</strong> <span id="filteredAccountsStatus">0명</span></div>
+        </div>
+
+        <div class="notice">
+          처음 분석할 때는 언팔 목록이 비어 있을 수 있습니다.
+          언팔 탐지는 <strong>이전 팔로워 목록</strong>과 <strong>현재 팔로워 목록</strong>을 비교해야 하기 때문입니다.
+        </div>
+
+        <div class="footer-note">
+          브라우저 LocalStorage를 사용해 이전 팔로워 스냅샷을 저장합니다.
+        </div>
+      </section>
+
+      <section class="result-area">
+        <div class="hero">
+          <div class="card hero-main">
+            <h2 id="heroTitle">파일을 업로드하면 분석 결과가 표시됩니다</h2>
+            <p id="heroDesc">
+              followers_1.json과 following.json을 업로드한 뒤 분석 시작을 눌러주세요.
+            </p>
+            <div class="pill-row">
+              <div class="pill">총 팔로워 <strong id="pillFollowers">0</strong></div>
+              <div class="pill">총 팔로잉 <strong id="pillFollowing">0</strong></div>
+              <div class="pill">맞팔 <strong id="pillMutual">0</strong></div>
+              <div class="pill">팬 계정 <strong id="pillFans">0</strong></div>
+            </div>
+          </div>
+
+          <div class="card hero-side">
+            <div>이번 비교 기준 언팔</div>
+            <div class="big" id="unfollowBig">0</div>
+            <div class="sub">이전 스냅샷 대비 현재 followers_1.json에서 사라진 계정 수</div>
+            <div class="mini-list" id="miniUnfollowList">
+              <div class="empty-state">아직 비교할 이전 스냅샷이 없습니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card stat-card">
+            <div class="label">총 팔로워</div>
+            <div class="value" id="statFollowers">0</div>
+            <div class="delta up" id="deltaFollowers">followers_1.json 기준</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="label">총 팔로잉</div>
+            <div class="value" id="statFollowing">0</div>
+            <div class="delta up" id="deltaFollowing">following.json 기준</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="label">맞팔 아닌 계정</div>
+            <div class="value" id="statNonMutual">0</div>
+            <div class="delta warn" id="deltaNonMutual">내가 팔로우만 함</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="label">팬 계정</div>
+            <div class="value" id="statFans">0</div>
+            <div class="delta up" id="deltaFans">상대만 팔로우 중</div>
+          </div>
+        </div>
+
+        <div class="bottom">
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h3 id="listTitle">분석 목록</h3>
+                <p id="listDesc">선택한 유형의 계정 목록을 확인할 수 있습니다.</p>
+              </div>
+              <div class="tabs">
+                <button class="tab active" data-tab="unfollow">언팔</button>
+                <button class="tab" data-tab="nonMutual">맞팔 아님</button>
+                <button class="tab" data-tab="fans">팬 계정</button>
+                <button class="tab" data-tab="mutual">맞팔</button>
+              </div>
+            </div>
+            <div class="user-list" id="userList">
+              <div class="empty-state">분석 전입니다.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h3>관계 분포</h3>
+                <p>업로드한 2개 JSON 기준 계정 관계 요약</p>
+              </div>
+            </div>
+            <div class="chart-wrap" id="chartWrap"></div>
+            <div class="notice" style="margin-top:18px;">
+              <strong>중요:</strong>
+              공식 로그인 없이도 동작하지만, <strong>언팔 탐지</strong>는 이전에 저장된 followers 스냅샷이 있어야만 계산됩니다.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal" id="guideModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div>
+          <h3>파일 다운로드 방법 안내</h3>
+          <p>
+            아래 순서대로 인스타그램에서 내 정보를 내려받은 뒤,
+            다운로드된 파일 안의 <strong>followers_1.json</strong>과
+            <strong>following.json</strong>을 이 페이지에 업로드하세요.
+          </p>
+        </div>
+        <button id="closeGuideBtn">닫기</button>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <strong>프로필 → 오른쪽 위 탭(설정)</strong>
+            <span>인스타그램 앱에서 본인 프로필 화면으로 이동한 뒤 오른쪽 위 메뉴를 엽니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <strong>검색에 ‘내 정보 다운로드’ 입력</strong>
+            <span>설정 검색창에서 <strong>내 정보 다운로드</strong>를 찾아 들어갑니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <strong>‘내보내기 만들기’ 선택</strong>
+            <span>다운로드 또는 내보내기 관련 메뉴에서 새 내보내기를 생성합니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <strong>원하는 계정 선택 → 기기로 내보내기</strong>
+            <span>여러 계정이 있다면 분석할 계정을 고르고, 저장 위치는 기기로 내보내기를 선택합니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div>
+            <strong>정보 맞춤 설정</strong>
+            <span><strong>팔로잉, 팔로워만 체크</strong>합니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">6</div>
+          <div>
+            <strong>기간 전체 선택</strong>
+            <span>기간은 <strong>전체</strong>로 설정합니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">7</div>
+          <div>
+            <strong>형식 HTML → JSON으로 변경</strong>
+            <span>반드시 <strong>JSON</strong> 형식으로 바꿔야 이 분석기에서 읽을 수 있습니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">8</div>
+          <div>
+            <strong>내보내기 시작 → 비밀번호 입력</strong>
+            <span>내보내기를 시작하고 필요하면 계정 비밀번호를 입력합니다.</span>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">9</div>
+          <div>
+            <strong>다운로드 완료 후 파일 업로드</strong>
+            <span>
+              다운로드가 완료되면 압축을 풀고,
+              <strong>followers_1.json</strong>과 <strong>following.json</strong> 파일을
+              이 페이지에 업로드하면 됩니다.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="closeGuideBtnBottom" class="primary">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "followscope_previous_followers_snapshot_v2";
+
+    const KEYWORD_MAP = {
+      school: [
+        "school", "academy", "campus", "univ", "university", "college",
+        "초등", "중학교", "고등", "대학교", "대학", "학교", "학생회", "총학생회", "교육청"
+      ],
+      public: [
+        "city", "county", "district", "gov", "office", "public", "official", "hall",
+        "구청", "시청", "군청", "주민센터", "행정", "지자체", "공공", "도청", "읍사무소", "면사무소"
+      ],
+      promo: [
+        "official", "promo", "promotion", "marketing", "brand", "event", "agency", "press",
+        "global", "shop", "store", "goods", "advert", "pr",
+        "공식", "홍보", "브랜드", "이벤트", "스토어", "샵", "마케팅", "오피셜"
+      ],
+      celeb: [
+        "actor", "actress", "singer", "idol", "artist", "rapper", "comedian", "celeb", "star", "dj",
+        "배우", "가수", "아이돌", "연예인", "코미디언", "아티스트", "셀럽", "래퍼"
+      ],
+      influencer: [
+        "influencer", "creator", "creater", "model", "youtuber", "blogger", "streamer", "tiktoker", "reviewer",
+        "크리에이터", "인플루언서", "모델", "유튜버", "블로거", "스트리머", "리뷰어"
+      ]
+    };
+
+    const CATEGORY_LABELS = {
+      school: "학교",
+      public: "지자체/공공기관",
+      promo: "홍보/브랜드/공식",
+      celeb: "연예인/셀럽",
+      influencer: "인플루언서/크리에이터"
+    };
+
+    const state = {
+      followers: [],
+      following: [],
+      results: {
+        mutual: [],
+        fans: [],
+        nonMutual: [],
+        unfollow: []
+      },
+      filteredResults: {
+        mutual: [],
+        fans: [],
+        nonMutual: [],
+        unfollow: []
+      },
+      filterMeta: {
+        filteredUserSet: new Set(),
+        reasonMap: new Map()
+      }
+    };
+
+    const el = {
+      followersFile: document.getElementById("followersFile"),
+      followingFile: document.getElementById("followingFile"),
+      followersFileName: document.getElementById("followersFileName"),
+      followingFileName: document.getElementById("followingFileName"),
+      snapshotStatus: document.getElementById("snapshotStatus"),
+      filteredAccountsStatus: document.getElementById("filteredAccountsStatus"),
+      analyzeBtn: document.getElementById("analyzeBtn"),
+      saveSnapshotBtn: document.getElementById("saveSnapshotBtn"),
+      resetSnapshotBtn: document.getElementById("resetSnapshotBtn"),
+      loadSampleBtn: document.getElementById("loadSampleBtn"),
+      guideBtn: document.getElementById("guideBtn"),
+      guideModal: document.getElementById("guideModal"),
+      closeGuideBtn: document.getElementById("closeGuideBtn"),
+      closeGuideBtnBottom: document.getElementById("closeGuideBtnBottom"),
+      heroTitle: document.getElementById("heroTitle"),
+      heroDesc: document.getElementById("heroDesc"),
+      pillFollowers: document.getElementById("pillFollowers"),
+      pillFollowing: document.getElementById("pillFollowing"),
+      pillMutual: document.getElementById("pillMutual"),
+      pillFans: document.getElementById("pillFans"),
+      statFollowers: document.getElementById("statFollowers"),
+      statFollowing: document.getElementById("statFollowing"),
+      statNonMutual: document.getElementById("statNonMutual"),
+      statFans: document.getElementById("statFans"),
+      unfollowBig: document.getElementById("unfollowBig"),
+      miniUnfollowList: document.getElementById("miniUnfollowList"),
+      userList: document.getElementById("userList"),
+      listTitle: document.getElementById("listTitle"),
+      listDesc: document.getElementById("listDesc"),
+      chartWrap: document.getElementById("chartWrap"),
+      tabs: Array.from(document.querySelectorAll(".tab")),
+      filterModeInputs: Array.from(document.querySelectorAll('input[name="filterMode"]')),
+      categoryChecks: Array.from(document.querySelectorAll(".categoryCheck")),
+      customKeywords: document.getElementById("customKeywords"),
+      filterSummary: document.getElementById("filterSummary"),
+      keywordPreview: document.getElementById("keywordPreview")
+    };
+
+    let activeTab = "unfollow";
+
+    function formatNumber(n) {
+      return Number(n).toLocaleString("ko-KR");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getInitial(name) {
+      if (!name) return "?";
+      return name.trim().charAt(0).toUpperCase();
+    }
+
+    function normalizeName(name) {
+      return String(name || "").trim().toLowerCase();
+    }
+
+    function updateSnapshotStatus() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        el.snapshotStatus.textContent = "없음";
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        const count = Array.isArray(parsed.accounts) ? parsed.accounts.length : 0;
+        const savedAt = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString("ko-KR") : "알 수 없음";
+        el.snapshotStatus.textContent = `${count}개 저장됨 (${savedAt})`;
+      } catch {
+        el.snapshotStatus.textContent = "손상됨";
+      }
+    }
+
+    async function readJsonFile(file) {
+      if (!file) {
+        throw new Error("파일이 선택되지 않았습니다.");
+      }
+
+      const text = await file.text();
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error(`${file.name} 파일이 올바른 JSON 형식이 아닙니다.`);
+      }
+    }
+
+    function parseFollowersJson(data) {
+      if (!Array.isArray(data)) {
+        throw new Error("followers_1.json 형식이 예상과 다릅니다. 최상위가 배열이어야 합니다.");
+      }
+
+      const result = new Set();
+
+      for (const item of data) {
+        if (!item || !Array.isArray(item.string_list_data)) continue;
+
+        for (const entry of item.string_list_data) {
+          if (entry && typeof entry.value === "string" && entry.value.trim()) {
+            result.add(entry.value.trim());
+          }
+        }
+      }
+
+      return Array.from(result).sort((a, b) => a.localeCompare(b));
+    }
+
+    function parseFollowingJson(data) {
+      if (!data || !Array.isArray(data.relationships_following)) {
+        throw new Error("following.json 형식이 예상과 다릅니다. relationships_following 배열이 필요합니다.");
+      }
+
+      const result = new Set();
+
+      for (const item of data.relationships_following) {
+        if (item && typeof item.title === "string" && item.title.trim()) {
+          result.add(item.title.trim());
+        }
+      }
+
+      return Array.from(result).sort((a, b) => a.localeCompare(b));
+    }
+
+    function arrayDiff(a, b) {
+      const bSet = new Set(b);
+      return a.filter((item) => !bSet.has(item));
+    }
+
+    function arrayIntersection(a, b) {
+      const bSet = new Set(b);
+      return a.filter((item) => bSet.has(item));
+    }
+
+    function buildResults() {
+      const followers = state.followers;
+      const following = state.following;
+
+      const mutual = arrayIntersection(followers, following).sort((a, b) => a.localeCompare(b));
+      const fans = arrayDiff(followers, following).sort((a, b) => a.localeCompare(b));
+      const nonMutual = arrayDiff(following, followers).sort((a, b) => a.localeCompare(b));
+
+      let unfollow = [];
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if (raw) {
+        try {
+          const prev = JSON.parse(raw);
+          const previousFollowers = Array.isArray(prev.accounts) ? prev.accounts : [];
+          unfollow = arrayDiff(previousFollowers, followers).sort((a, b) => a.localeCompare(b));
+        } catch {
+          unfollow = [];
+        }
+      }
+
+      state.results = { mutual, fans, nonMutual, unfollow };
+      applyFilter();
+    }
+
+    function getSelectedMode() {
+      return el.filterModeInputs.find((input) => input.checked)?.value || "all";
+    }
+
+    function getSelectedCategories() {
+      return el.categoryChecks.filter((input) => input.checked).map((input) => input.value);
+    }
+
+    function parseCustomKeywords() {
+      return el.customKeywords.value
+        .split(/[\n,]/g)
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    function buildKeywordPreview() {
+      const categories = getSelectedCategories();
+      const custom = parseCustomKeywords();
+
+      const previewKeywords = [
+        ...categories.flatMap((category) => KEYWORD_MAP[category] || []).slice(0, 14),
+        ...custom.slice(0, 10)
+      ];
+
+      el.keywordPreview.innerHTML = "";
+
+      if (!previewKeywords.length) {
+        el.keywordPreview.innerHTML = `<span class="chip">선택된 키워드 없음</span>`;
+        return;
+      }
+
+      const unique = [...new Set(previewKeywords)];
+      unique.forEach((keyword) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = keyword;
+        el.keywordPreview.appendChild(chip);
+      });
+    }
+
+    function classifyUsername(username) {
+      const normalized = normalizeName(username);
+      const selectedCategories = getSelectedCategories();
+      const customKeywords = parseCustomKeywords();
+
+      const matchedCategories = [];
+
+      for (const category of selectedCategories) {
+        const keywords = KEYWORD_MAP[category] || [];
+        const matched = keywords.some((keyword) => normalized.includes(String(keyword).toLowerCase()));
+        if (matched) matchedCategories.push(category);
+      }
+
+      const matchedCustomKeywords = customKeywords.filter((keyword) => normalized.includes(keyword));
+
+      return {
+        matched: matchedCategories.length > 0 || matchedCustomKeywords.length > 0,
+        categories: matchedCategories,
+        customKeywords: matchedCustomKeywords
+      };
+    }
+
+    function buildFilterMeta(allUsernames) {
+      const filteredUserSet = new Set();
+      const reasonMap = new Map();
+
+      allUsernames.forEach((username) => {
+        const info = classifyUsername(username);
+
+        if (info.matched) {
+          filteredUserSet.add(username);
+
+          const reasons = [
+            ...info.categories.map((category) => CATEGORY_LABELS[category] || category),
+            ...info.customKeywords.map((keyword) => `사용자키워드:${keyword}`)
+          ];
+
+          reasonMap.set(username, reasons);
+        }
+      });
+
+      state.filterMeta = { filteredUserSet, reasonMap };
+    }
+
+    function filterAccounts(accounts) {
+      const mode = getSelectedMode();
+      const { filteredUserSet } = state.filterMeta;
+
+      if (mode === "all") return [...accounts];
+      if (mode === "exclude") return accounts.filter((username) => !filteredUserSet.has(username));
+      if (mode === "only") return accounts.filter((username) => filteredUserSet.has(username));
+      return [...accounts];
+    }
+
+    function applyFilter() {
+      const universe = new Set([
+        ...state.results.mutual,
+        ...state.results.fans,
+        ...state.results.nonMutual,
+        ...state.results.unfollow
+      ]);
+
+      buildFilterMeta(Array.from(universe));
+
+      state.filteredResults = {
+        mutual: filterAccounts(state.results.mutual),
+        fans: filterAccounts(state.results.fans),
+        nonMutual: filterAccounts(state.results.nonMutual),
+        unfollow: filterAccounts(state.results.unfollow)
+      };
+
+      updateFilterSummary();
+      renderSummary();
+    }
+
+    function updateFilterSummary() {
+      const mode = getSelectedMode();
+      const categories = getSelectedCategories();
+      const custom = parseCustomKeywords();
+      const filteredCount = state.filterMeta.filteredUserSet.size;
+
+      el.filteredAccountsStatus.textContent = `${formatNumber(filteredCount)}명`;
+
+      buildKeywordPreview();
+
+      if (mode === "all") {
+        el.filterSummary.textContent = "현재는 전체 보기 모드입니다. 모든 계정이 결과에 포함됩니다.";
+        return;
+      }
+
+      if (!categories.length && !custom.length) {
+        el.filterSummary.textContent = "필터 모드가 켜져 있지만 선택된 유형이나 키워드가 없습니다. 결과는 사실상 전체와 동일합니다.";
+        return;
+      }
+
+      const labels = [
+        ...categories.map((category) => CATEGORY_LABELS[category]),
+        ...(custom.length ? [`사용자 키워드 ${custom.length}개`] : [])
+      ];
+
+      if (mode === "exclude") {
+        el.filterSummary.textContent =
+          `현재 ${labels.join(", ")} 유형으로 분류된 계정 ${formatNumber(filteredCount)}명을 결과에서 제외합니다.`;
+      } else {
+        el.filterSummary.textContent =
+          `현재 ${labels.join(", ")} 유형으로 분류된 계정 ${formatNumber(filteredCount)}명만 결과에 포함합니다.`;
+      }
+    }
+
+    function renderSummary() {
+      const { mutual, fans, nonMutual, unfollow } = state.filteredResults;
+      const mode = getSelectedMode();
+
+      let modeText = "필터 없이 전체 결과";
+      if (mode === "exclude") modeText = "선택한 인플루언서/기관 계정 제외 결과";
+      if (mode === "only") modeText = "선택한 인플루언서/기관 계정만 포함한 결과";
+
+      el.heroTitle.textContent = `현재 분석 완료: 맞팔 ${formatNumber(mutual.length)}명, 팬 계정 ${formatNumber(fans.length)}명`;
+      el.heroDesc.textContent =
+        `${modeText}를 기준으로 followers_1.json과 following.json을 비교했습니다. 언팔은 이전에 저장된 followers 스냅샷과 현재 followers 목록 비교 결과입니다.`;
+
+      el.pillFollowers.textContent = formatNumber(state.followers.length);
+      el.pillFollowing.textContent = formatNumber(state.following.length);
+      el.pillMutual.textContent = formatNumber(mutual.length);
+      el.pillFans.textContent = formatNumber(fans.length);
+
+      el.statFollowers.textContent = formatNumber(state.followers.length);
+      el.statFollowing.textContent = formatNumber(state.following.length);
+      el.statNonMutual.textContent = formatNumber(nonMutual.length);
+      el.statFans.textContent = formatNumber(fans.length);
+
+      el.unfollowBig.textContent = formatNumber(unfollow.length);
+
+      renderMiniUnfollow();
+      renderChart();
+      renderTabContent(activeTab);
+    }
+
+    function renderMiniUnfollow() {
+      const unfollow = state.filteredResults.unfollow;
+      el.miniUnfollowList.innerHTML = "";
+
+      if (!unfollow.length) {
+        const hasSnapshot = !!localStorage.getItem(STORAGE_KEY);
+        el.miniUnfollowList.innerHTML = `
+          <div class="empty-state">
+            ${hasSnapshot ? "현재 필터 기준에서 언팔된 계정이 없습니다." : "아직 비교할 이전 스냅샷이 없습니다."}
+          </div>
+        `;
+        return;
+      }
+
+      unfollow.slice(0, 5).forEach((username) => {
+        const item = document.createElement("div");
+        item.className = "mini-item";
+        item.innerHTML = `
+          <span>${escapeHtml(username)}</span>
+          <span class="badge red">언팔</span>
+        `;
+        el.miniUnfollowList.appendChild(item);
+      });
+    }
+
+    function getTabMeta(tab) {
+      switch (tab) {
+        case "unfollow":
+          return {
+            title: "언팔 목록",
+            desc: "이전 followers 스냅샷에는 있었지만 현재 followers_1.json에는 없는 계정",
+            data: state.filteredResults.unfollow,
+            badgeClass: "red",
+            badgeText: "언팔"
+          };
+        case "nonMutual":
+          return {
+            title: "맞팔 아닌 계정",
+            desc: "내가 팔로우하지만 상대는 나를 팔로우하지 않는 계정",
+            data: state.filteredResults.nonMutual,
+            badgeClass: "yellow",
+            badgeText: "맞팔 아님"
+          };
+        case "fans":
+          return {
+            title: "팬 계정",
+            desc: "상대는 나를 팔로우하지만 나는 팔로우하지 않는 계정",
+            data: state.filteredResults.fans,
+            badgeClass: "green",
+            badgeText: "팬"
+          };
+        case "mutual":
+          return {
+            title: "맞팔 계정",
+            desc: "서로 팔로우 중인 계정",
+            data: state.filteredResults.mutual,
+            badgeClass: "blue",
+            badgeText: "맞팔"
+          };
+        default:
+          return {
+            title: "분석 목록",
+            desc: "분석 결과가 표시됩니다.",
+            data: [],
+            badgeClass: "blue",
+            badgeText: "-"
+          };
+      }
+    }
+
+    function getReasonBadge(username) {
+      const reasons = state.filterMeta.reasonMap.get(username) || [];
+      if (!reasons.length) return "";
+      return `<span class="badge purple">${escapeHtml(reasons[0])}</span>`;
+    }
+
+    function renderTabContent(tab) {
+      activeTab = tab;
+      el.tabs.forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === tab);
+      });
+
+      const meta = getTabMeta(tab);
+      el.listTitle.textContent = meta.title;
+      el.listDesc.textContent = meta.desc;
+      el.userList.innerHTML = "";
+
+      if (!meta.data.length) {
+        el.userList.innerHTML = `<div class="empty-state">표시할 계정이 없습니다.</div>`;
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      meta.data.forEach((username) => {
+        const row = document.createElement("div");
+        row.className = "user-row";
+        row.innerHTML = `
+          <div class="user-left">
+            <div class="avatar">${escapeHtml(getInitial(username))}</div>
+            <div class="user-meta">
+              <strong>${escapeHtml(username)}</strong>
+              <span>@${escapeHtml(username)}</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            ${getReasonBadge(username)}
+            <span class="badge ${meta.badgeClass}">${meta.badgeText}</span>
+          </div>
+        `;
+        fragment.appendChild(row);
+      });
+
+      el.userList.appendChild(fragment);
+    }
+
+    function renderChart() {
+      const data = [
+        { label: "맞팔", value: state.filteredResults.mutual.length },
+        { label: "팬", value: state.filteredResults.fans.length },
+        { label: "맞팔아님", value: state.filteredResults.nonMutual.length },
+        { label: "언팔", value: state.filteredResults.unfollow.length }
+      ];
+
+      el.chartWrap.innerHTML = "";
+
+      const max = Math.max(...data.map((d) => d.value), 1);
+
+      data.forEach((item) => {
+        const col = document.createElement("div");
+        col.className = "bar-col";
+
+        const value = document.createElement("div");
+        value.className = "bar-value";
+        value.textContent = formatNumber(item.value);
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${(item.value / max) * 190 + 18}px`;
+        bar.title = `${item.label}: ${item.value}`;
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.textContent = item.label;
+
+        col.appendChild(value);
+        col.appendChild(bar);
+        col.appendChild(label);
+
+        el.chartWrap.appendChild(col);
+      });
+    }
+
+    function saveCurrentSnapshot() {
+      if (!state.followers.length) {
+        alert("먼저 followers_1.json을 분석해 현재 팔로워 목록을 불러와 주세요.");
+        return;
+      }
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          savedAt: new Date().toISOString(),
+          accounts: state.followers
+        })
+      );
+
+      updateSnapshotStatus();
+      alert("현재 followers 스냅샷이 저장되었습니다.");
+    }
+
+    function resetSnapshot() {
+      localStorage.removeItem(STORAGE_KEY);
+      updateSnapshotStatus();
+      state.results.unfollow = [];
+      state.filteredResults.unfollow = [];
+      renderMiniUnfollow();
+      if (activeTab === "unfollow") {
+        renderTabContent("unfollow");
+      }
+      renderChart();
+      alert("저장된 팔로워 스냅샷을 삭제했습니다.");
+    }
+
+    function setSelectedFileNames() {
+      el.followersFileName.textContent = el.followersFile.files[0]?.name || "없음";
+      el.followingFileName.textContent = el.followingFile.files[0]?.name || "없음";
+    }
+
+    async function analyzeFiles() {
+      try {
+        const followersFile = el.followersFile.files[0];
+        const followingFile = el.followingFile.files[0];
+
+        if (!followersFile || !followingFile) {
+          alert("followers_1.json과 following.json 두 파일을 모두 선택해 주세요.");
+          return;
+        }
+
+        const followersJson = await readJsonFile(followersFile);
+        const followingJson = await readJsonFile(followingFile);
+
+        const followers = parseFollowersJson(followersJson);
+        const following = parseFollowingJson(followingJson);
+
+        state.followers = followers;
+        state.following = following;
+
+        buildResults();
+
+        alert("분석이 완료되었습니다.");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "파일 분석 중 오류가 발생했습니다.");
+      }
+    }
+
+    function loadSampleData() {
+      const sampleFollowers = [
+        { string_list_data: [{ value: "daily_y0ung" }] },
+        { string_list_data: [{ value: "upso__1020" }] },
+        { string_list_data: [{ value: "yx_ixn" }] },
+        { string_list_data: [{ value: "fan_account_01" }] },
+        { string_list_data: [{ value: "fan_account_02" }] },
+        { string_list_data: [{ value: "mutual_user_01" }] },
+        { string_list_data: [{ value: "seoul_city_official" }] },
+        { string_list_data: [{ value: "dream_university" }] },
+        { string_list_data: [{ value: "artist_celeb_official" }] },
+        { string_list_data: [{ value: "travel_creator_kr" }] }
+      ];
+
+      const sampleFollowing = {
+        relationships_following: [
+          { title: "daily_y0ung" },
+          { title: "upso__1020" },
+          { title: "yx_ixn" },
+          { title: "non_mutual_01" },
+          { title: "non_mutual_02" },
+          { title: "mutual_user_01" },
+          { title: "seoul_city_official" },
+          { title: "dream_university" },
+          { title: "artist_celeb_official" },
+          { title: "travel_creator_kr" },
+          { title: "brand_event_shop" }
+        ]
+      };
+
+      try {
+        state.followers = parseFollowersJson(sampleFollowers);
+        state.following = parseFollowingJson(sampleFollowing);
+        buildResults();
+        alert("샘플 데이터로 분석 결과를 표시했습니다.");
+      } catch (error) {
+        console.error(error);
+        alert("샘플 데이터 처리 중 오류가 발생했습니다.");
+      }
+    }
+
+    function openGuideModal() {
+      el.guideModal.classList.add("show");
+      el.guideModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeGuideModal() {
+      el.guideModal.classList.remove("show");
+      el.guideModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    function handleFilterChange() {
+      updateFilterSummary();
+
+      const hasData =
+        state.results.mutual.length ||
+        state.results.fans.length ||
+        state.results.nonMutual.length ||
+        state.results.unfollow.length;
+
+      if (hasData) {
+        applyFilter();
+      }
+    }
+
+    el.followersFile.addEventListener("change", setSelectedFileNames);
+    el.followingFile.addEventListener("change", setSelectedFileNames);
+    el.analyzeBtn.addEventListener("click", analyzeFiles);
+    el.saveSnapshotBtn.addEventListener("click", saveCurrentSnapshot);
+    el.resetSnapshotBtn.addEventListener("click", resetSnapshot);
+    el.loadSampleBtn.addEventListener("click", loadSampleData);
+
+    el.guideBtn.addEventListener("click", openGuideModal);
+    el.closeGuideBtn.addEventListener("click", closeGuideModal);
+    el.closeGuideBtnBottom.addEventListener("click", closeGuideModal);
+
+    el.guideModal.addEventListener("click", (event) => {
+      if (event.target === el.guideModal) {
+        closeGuideModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && el.guideModal.classList.contains("show")) {
+        closeGuideModal();
+      }
+    });
+
+    el.tabs.forEach((button) => {
+      button.addEventListener("click", () => {
+        renderTabContent(button.dataset.tab);
+      });
+    });
+
+    el.filterModeInputs.forEach((input) => {
+      input.addEventListener("change", handleFilterChange);
+    });
+
+    el.categoryChecks.forEach((input) => {
+      input.addEventListener("change", handleFilterChange);
+    });
+
+    el.customKeywords.addEventListener("input", handleFilterChange);
+
+    updateSnapshotStatus();
+    updateFilterSummary();
+    renderChart();
+  </script>
+</body>
+</html>
